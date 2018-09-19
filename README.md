@@ -2,6 +2,8 @@
 
 Redis cluster support for the `r2d2` connection pool.
 
+Documentation is available at [here](https://docs.rs/r2d2_redis_cluster/0.1.0/r2d2_redis_cluster/).
+
 # Example
 ```rust,no_run
 extern crate r2d2;
