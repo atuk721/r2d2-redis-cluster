@@ -2,13 +2,11 @@
 //!
 //! # Example
 //! ```rust,no_run
-//! extern crate r2d2;
 //! extern crate r2d2_redis_cluster;
 //!
 //! use std::thread;
 //!
-//! use r2d2::Pool;
-//! use r2d2_redis_cluster::{Commands, RedisClusterConnectionManager};
+//! use r2d2_redis_cluster::{r2d2::Pool, Commands, RedisClusterConnectionManager};
 //!
 //! fn main() {
 //!     let redis_uri = vec!["redis://127.0.0.1:6379", "redis://127.0.0.1:6378", "redis://127.0.0.1:6377"];
@@ -37,25 +35,28 @@
 //!     assert_eq!(res, 10);
 //! }
 //! ```
-extern crate r2d2;
-extern crate redis;
-extern crate redis_cluster_rs;
+pub extern crate r2d2;
+pub extern crate redis_cluster_rs;
 
 use r2d2::ManageConnection;
-use redis::{ConnectionInfo, IntoConnectionInfo, ErrorKind, RedisError};
-use redis_cluster_rs::{Client, Connection};
+use redis_cluster_rs::{
+    redis::{ConnectionInfo, ErrorKind, IntoConnectionInfo, RedisError},
+    Client, Connection,
+};
 
-pub use redis::{ConnectionLike, Commands, RedisResult};
+pub use redis_cluster_rs::redis::{Commands, ConnectionLike, RedisResult};
 
 /// An `r2d2::ConnectionManager` for `redis_cluster_rs::Client`.
 #[derive(Debug)]
 pub struct RedisClusterConnectionManager {
-    nodes: Vec<ConnectionInfo>
+    nodes: Vec<ConnectionInfo>,
 }
 
 impl RedisClusterConnectionManager {
     /// Create new `RedisClusterConnectionManager`.
-    pub fn new<T: IntoConnectionInfo>(input_nodes: Vec<T>) -> RedisResult<RedisClusterConnectionManager> {
+    pub fn new<T: IntoConnectionInfo>(
+        input_nodes: Vec<T>,
+    ) -> RedisResult<RedisClusterConnectionManager> {
         let mut nodes = Vec::with_capacity(input_nodes.len());
 
         for node in input_nodes {
@@ -79,7 +80,10 @@ impl ManageConnection for RedisClusterConnectionManager {
         if conn.check_connection() {
             Ok(())
         } else {
-            Err(RedisError::from((ErrorKind::IoError, "Connection check error.")))
+            Err(RedisError::from((
+                ErrorKind::IoError,
+                "Connection check error.",
+            )))
         }
     }
 
