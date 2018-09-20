@@ -2,13 +2,10 @@
 //!
 //! # Example
 //! ```rust,no_run
-//! extern crate r2d2;
 //! extern crate r2d2_redis_cluster;
 //!
 //! use std::thread;
-//!
-//! use r2d2::Pool;
-//! use r2d2_redis_cluster::{Commands, RedisClusterConnectionManager};
+//! use r2d2_redis_cluster::{r2d2::Pool, Commands, RedisClusterConnectionManager};
 //!
 //! fn main() {
 //!     let redis_uri = vec!["redis://127.0.0.1:6379", "redis://127.0.0.1:6378", "redis://127.0.0.1:6377"];
@@ -37,9 +34,13 @@
 //!     assert_eq!(res, 10);
 //! }
 //! ```
-extern crate r2d2;
+pub extern crate r2d2;
+pub extern crate redis_cluster_rs;
+
+// NOTE: We should use redis_cluster_rs depended redis crate.
+//       1. Add `pub extern crate redis` to lib.rs ofredis_cluster_rs.
+//       2. Use redis crate as `redis_cluster_rs::redis`.
 extern crate redis;
-extern crate redis_cluster_rs;
 
 use r2d2::ManageConnection;
 use redis::{ConnectionInfo, IntoConnectionInfo, ErrorKind, RedisError};
