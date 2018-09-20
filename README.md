@@ -2,17 +2,15 @@
 
 Redis cluster support for the `r2d2` connection pool.
 
-Documentation is available at [here](https://docs.rs/r2d2_redis_cluster/0.1.0/r2d2_redis_cluster/).
+Documentation is available at [here](https://docs.rs/r2d2_redis_cluster/0.1.2/r2d2_redis_cluster/).
 
 # Example
 ```rust,no_run
-extern crate r2d2;
 extern crate r2d2_redis_cluster;
 
 use std::thread;
 
-use r2d2::Pool;
-use r2d2_redis_cluster::{Commands, RedisClusterConnectionManager};
+use r2d2_redis_cluster::{r2d2::Pool, Commands, RedisClusterConnectionManager};
 
 fn main() {
     let redis_uri = vec!["redis://127.0.0.1:6379", "redis://127.0.0.1:6378", "redis://127.0.0.1:6377"];
