@@ -11,4 +11,4 @@ readme = "README.md"
 
 [dependencies]
 r2d2 = "0.8"
-redis_cluster_rs = "0.1"
+redis_cluster_rs = "0.1.6"
