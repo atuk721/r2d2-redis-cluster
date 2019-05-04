@@ -50,6 +50,7 @@ pub use redis_cluster_rs::redis::{Commands, ConnectionLike, RedisResult};
 #[derive(Debug)]
 pub struct RedisClusterConnectionManager {
     nodes: Vec<ConnectionInfo>,
+    password: Option<String>,
 }
 
 impl RedisClusterConnectionManager {
@@ -57,13 +58,31 @@ impl RedisClusterConnectionManager {
     pub fn new<T: IntoConnectionInfo>(
         input_nodes: Vec<T>,
     ) -> RedisResult<RedisClusterConnectionManager> {
+        Self::new_internal(input_nodes, None)
+    }
+
+    /// Create new `RedisClusterConnectionManager` with authentication.
+    pub fn new_with_auth<T: IntoConnectionInfo>(
+        input_nodes: Vec<T>,
+        password: String,
+    ) -> RedisResult<RedisClusterConnectionManager> {
+        Self::new_internal(input_nodes, Some(password))
+    }
+
+    fn new_internal<T: IntoConnectionInfo>(
+        input_nodes: Vec<T>,
+        password: Option<String>,
+    ) -> RedisResult<RedisClusterConnectionManager> {
         let mut nodes = Vec::with_capacity(input_nodes.len());
 
         for node in input_nodes {
             nodes.push(node.into_connection_info()?)
         }
 
-        Ok(RedisClusterConnectionManager { nodes })
+        Ok(RedisClusterConnectionManager {
+            nodes,
+            password,
+        })
     }
 }
 
@@ -72,7 +91,11 @@ impl ManageConnection for RedisClusterConnectionManager {
     type Error = RedisError;
 
     fn connect(&self) -> Result<Self::Connection, Self::Error> {
-        let client = Client::open(self.nodes.clone())?;
+        let client = if self.password.is_none() {
+            Client::open(self.nodes.clone())?
+        } else {
+            Client::open_with_auth(self.nodes.clone(), self.password.clone().unwrap())?
+        };
         client.get_connection()
     }
 
