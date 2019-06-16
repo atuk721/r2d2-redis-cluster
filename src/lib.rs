@@ -79,10 +79,7 @@ impl RedisClusterConnectionManager {
             nodes.push(node.into_connection_info()?)
         }
 
-        Ok(RedisClusterConnectionManager {
-            nodes,
-            password,
-        })
+        Ok(RedisClusterConnectionManager { nodes, password })
     }
 }
 
