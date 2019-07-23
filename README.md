@@ -2,7 +2,7 @@
 
 Redis cluster support for the `r2d2` connection pool.
 
-Documentation is available at [here](https://docs.rs/r2d2_redis_cluster/0.1.3/r2d2_redis_cluster/).
+Documentation is available at [here](https://docs.rs/r2d2_redis_cluster/0.1.5/r2d2_redis_cluster/).
 
 # Example
 

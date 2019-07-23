@@ -41,7 +41,7 @@ pub extern crate redis_cluster_rs;
 use r2d2::ManageConnection;
 use redis_cluster_rs::{
     redis::{ConnectionInfo, ErrorKind, IntoConnectionInfo, RedisError},
-    Client, Connection,
+    Builder, Connection,
 };
 
 pub use redis_cluster_rs::redis::{Commands, ConnectionLike, RedisResult};
@@ -50,6 +50,7 @@ pub use redis_cluster_rs::redis::{Commands, ConnectionLike, RedisResult};
 #[derive(Debug)]
 pub struct RedisClusterConnectionManager {
     nodes: Vec<ConnectionInfo>,
+    readonly: bool,
     password: Option<String>,
 }
 
@@ -58,28 +59,38 @@ impl RedisClusterConnectionManager {
     pub fn new<T: IntoConnectionInfo>(
         input_nodes: Vec<T>,
     ) -> RedisResult<RedisClusterConnectionManager> {
-        Self::new_internal(input_nodes, None)
-    }
-
-    /// Create new `RedisClusterConnectionManager` with authentication.
-    pub fn new_with_auth<T: IntoConnectionInfo>(
-        input_nodes: Vec<T>,
-        password: String,
-    ) -> RedisResult<RedisClusterConnectionManager> {
-        Self::new_internal(input_nodes, Some(password))
-    }
-
-    fn new_internal<T: IntoConnectionInfo>(
-        input_nodes: Vec<T>,
-        password: Option<String>,
-    ) -> RedisResult<RedisClusterConnectionManager> {
         let mut nodes = Vec::with_capacity(input_nodes.len());
 
         for node in input_nodes {
             nodes.push(node.into_connection_info()?)
         }
 
-        Ok(RedisClusterConnectionManager { nodes, password })
+        Ok(RedisClusterConnectionManager {
+            nodes,
+            readonly: false,
+            password: None,
+        })
+    }
+
+    /// Create new `RedisClusterConnectionManager` with authentication.
+    #[deprecated(note = "Please use new and password function")]
+    pub fn new_with_auth<T: IntoConnectionInfo>(
+        input_nodes: Vec<T>,
+        password: String,
+    ) -> RedisResult<RedisClusterConnectionManager> {
+        let mut result = Self::new(input_nodes)?;
+        result.set_password(password);
+        Ok(result)
+    }
+
+    /// Set read only mode for new Connection.
+    pub fn set_readonly(&mut self, readonly: bool) {
+        self.readonly = readonly;
+    }
+
+    /// Set password for new Connection.
+    pub fn set_password(&mut self, password: String) {
+        self.password = Some(password);
     }
 }
 
@@ -88,10 +99,12 @@ impl ManageConnection for RedisClusterConnectionManager {
     type Error = RedisError;
 
     fn connect(&self) -> Result<Self::Connection, Self::Error> {
-        let client = if self.password.is_none() {
-            Client::open(self.nodes.clone())?
+        let builder = Builder::new(self.nodes.clone()).readonly(self.readonly);
+
+        let client = if let Some(password) = self.password.clone() {
+            builder.password(password).open()?
         } else {
-            Client::open_with_auth(self.nodes.clone(), self.password.clone().unwrap())?
+            builder.open()?
         };
         client.get_connection()
     }
