@@ -5,6 +5,7 @@ Redis cluster support for the `r2d2` connection pool.
 Documentation is available at [here](https://docs.rs/r2d2_redis_cluster/0.1.3/r2d2_redis_cluster/).
 
 # Example
+
 ```rust,no_run
 extern crate r2d2_redis_cluster;
 
@@ -33,7 +34,7 @@ fn main() {
         h.join().unwrap();
     }
 
-    let connection = pool.get().unwrap();
+    let mut connection = pool.get().unwrap();
     let res: u64 = connection.get("test").unwrap();
 
     assert_eq!(res, 10);

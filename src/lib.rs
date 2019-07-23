@@ -29,7 +29,7 @@
 //!         h.join().unwrap();
 //!     }
 //!
-//!     let connection = pool.get().unwrap();
+//!     let mut connection = pool.get().unwrap();
 //!     let res: u64 = connection.get("test").unwrap();
 //!
 //!     assert_eq!(res, 10);
