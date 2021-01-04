@@ -1,6 +1,6 @@
 [package]
 name = "r2d2_redis_cluster"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Atsushi Koge <atuk721@gmail.com>", "hedgar2017 <hedgar2017@gmail.com>"]
 keywords = ["redis", "cluster", "database", "r2d2", "pool"]
 description = "Redis cluster support for the r2d2 connection pool."
