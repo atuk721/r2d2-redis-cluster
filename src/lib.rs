@@ -43,6 +43,7 @@ use redis_cluster_rs::{
     redis::{ConnectionInfo, ErrorKind, IntoConnectionInfo, RedisError},
     Builder, Connection,
 };
+use std::time::Duration;
 
 pub use redis_cluster_rs::redis::{Commands, ConnectionLike, RedisResult};
 
@@ -52,6 +53,8 @@ pub struct RedisClusterConnectionManager {
     nodes: Vec<ConnectionInfo>,
     readonly: bool,
     password: Option<String>,
+    read_timeout: Option<Duration>,
+    write_timeout: Option<Duration>,
 }
 
 impl RedisClusterConnectionManager {
@@ -69,6 +72,8 @@ impl RedisClusterConnectionManager {
             nodes,
             readonly: false,
             password: None,
+            read_timeout: None,
+            write_timeout: None,
         })
     }
 
@@ -92,6 +97,16 @@ impl RedisClusterConnectionManager {
     pub fn set_password(&mut self, password: String) {
         self.password = Some(password);
     }
+
+    /// Set the read timeout for the connection.
+    pub fn set_read_timeout(&mut self, timeout: Option<Duration>) {
+        self.read_timeout = timeout;
+    }
+
+    /// Set the write timeout for the connection.
+    pub fn set_write_timeout(&mut self, timeout: Option<Duration>) {
+        self.write_timeout = timeout;
+    }
 }
 
 impl ManageConnection for RedisClusterConnectionManager {
@@ -99,7 +114,10 @@ impl ManageConnection for RedisClusterConnectionManager {
     type Error = RedisError;
 
     fn connect(&self) -> Result<Self::Connection, Self::Error> {
-        let builder = Builder::new(self.nodes.clone()).readonly(self.readonly);
+        let builder = Builder::new(self.nodes.clone())
+            .readonly(self.readonly)
+            .read_timeout(self.read_timeout)
+            .write_timeout(self.write_timeout);
 
         let client = if let Some(password) = self.password.clone() {
             builder.password(password).open()?
